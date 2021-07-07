@@ -1,0 +1,72 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class ToDoListsManager {
+    + main()
+    + start()
+}
+
+class ToDoListsManagerController {
+    - model: TaskListModel
+    - displayedList: String
+    - displayMode: String
+    - newListTitle: TextField
+    - newTaskTitle: TextField
+    - newTaskDesc: TextField
+    - newDueDate: TextField
+    - toDoListsView: ListView<String>
+    - taskView: TableView
+    - viewOptions: ChoiceBox<String>
+    - selectedList: ChoiceBox<String>
+
+    initialize()
+    editListButtonClicked()
+    removeListButtonClicked()
+    removeTaskButtonClicked()
+    editTaskButtonClicked()
+    newListButtonClicked()
+    saveSingleButtonClicked()
+    saveMultipleButtonClicked()
+    loadSingleButtonClicked()
+    loadMultipleButtonClicked()
+    addTaskButtonClicked()
+    viewButtonClicked()
+    viewListButtonClicked()
+}
+
+class ToDoListsModel {
+    - toDoLists: ArrayList<ToDoList>
+
+    + addNewList(String, ObservableList)
+    + removeList(String, ObservableList)
+    + addNewTask(String, String, String, ObservableList, int)
+    + changeView(String, ObservableList, TableView, int)
+    + editListTitle(String, String, ObservableList)
+    + editTask(String, String, String, String, ObservableList, int)
+    + deleteTask(String, ObservableList, int)
+    + viewCurrentList(ObservableList, TableView, int, String)
+    + loadMultipleLists(ObservableList, ObservableList)
+    + loadList(ToDoList, ObservableList)
+    + saveList(String)
+    + saveMultiple(String, ObservableList)
+}
+
+class ToDoList {
+    - title: String
+    - tasks: ArrayList<Task>
+}
+
+class Task {
+    - title: String
+    - description: String
+    - due_date: String
+    - completed: Boolean
+}
+
+
+ToDoListsManager -- ToDoListsManagerController
+ToDoListsManagerController *--> ToDoListsModel
+ToDoListsModel *-> ToDoList
+ToDoList *--> Task
+
+@enduml

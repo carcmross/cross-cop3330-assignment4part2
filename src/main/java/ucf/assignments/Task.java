@@ -6,24 +6,14 @@ package ucf.assignments;
  */
 
 public class Task {
-    private String title;
+    private Boolean complete;
     private String desc;
     private String due_date;
-    private boolean complete;
 
-    public Task(String title, String desc, String due_date, boolean complete) {
-        this.title = title;
+    public Task(boolean complete, String desc, String due_date) {
+        this.complete = complete;
         this.desc = desc;
         this.due_date = due_date;
-        this.complete = complete;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getDesc() {
@@ -49,4 +39,6 @@ public class Task {
     public void setComplete(boolean complete) {
         this.complete = false;
     }
+
+
 }

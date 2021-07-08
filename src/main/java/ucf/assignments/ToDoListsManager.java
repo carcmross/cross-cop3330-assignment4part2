@@ -22,7 +22,7 @@ public class ToDoListsManager extends Application {
             Scene scene = new Scene(root);
 
             primaryStage.setScene(scene);
-            primaryStage.setTitle("Planner");
+            primaryStage.setTitle("To-Do List");
             primaryStage.show();
         } catch (IOException e) {
             e.printStackTrace();

@@ -8,6 +8,10 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -28,6 +32,7 @@ public class ToDoListsManagerController implements Initializable {
     private String displayMode = "View All";
 
     public static String curDesc;
+
     public static String curDueDate;
 
     @FXML
@@ -50,6 +55,9 @@ public class ToDoListsManagerController implements Initializable {
 
     @FXML
     private ChoiceBox<String> viewOptions;
+
+    @FXML
+    private DatePicker newTaskDatePicker;
 
 
     public Task getSelectedTask() {
@@ -77,6 +85,7 @@ public class ToDoListsManagerController implements Initializable {
         // Get value of newTaskDesc, and newDueDate text fields
         String descInput = newTaskDesc.getText();
         String dueDateInput = newDueDate.getText();
+        descInput = model.wrapIfLong(descInput);
 
         if (generateErrors(descInput, dueDateInput))
             return;
@@ -185,6 +194,7 @@ public class ToDoListsManagerController implements Initializable {
 
         selectedTask = taskView.getSelectionModel().getSelectedItem();
         curDesc = selectedTask.getDesc();
+        curDesc = model.wrapIfLong(curDesc);
         curDueDate = selectedTask.getDueDate();
         EditTaskManagerController editor = new EditTaskManagerController();
         editor.openEditWindow(selectedTask.getDesc(), selectedTask.getDueDate());
@@ -200,23 +210,43 @@ public class ToDoListsManagerController implements Initializable {
     }
 
     @FXML
-    public void saveSingleButtonClicked(ActionEvent actionEvent) {
-        // Get the value of the selectedList choice box
-        // Traverse the ToDoList array until the title matches the value of selectedList
-        // - Store the index of the matching list
+    public void saveSingleButtonClicked(ActionEvent actionEvent) throws IOException {
+        // Return warning alert if toDoList has 0 tasks
+        if (toDoList.size() == 0) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("NO EXISTING TASKS");
+            alert.setContentText("Please make sure there are tasks in the list before attempting to save.");
+            alert.showAndWait();
+            return;
+        }
+
+        // Traverse the toDoList array until last element, storing each element in a string as you go
         // Generate pop-up window asking what the name of the .txt file should be
-        // model.saveList("file name here", "ToDoList here", );
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save List");
+        File file = fileChooser.showSaveDialog(new Stage());
+        String fileInput = model.generateSaveOutput(toDoList);
+        if (file != null) {
+            // Write to file
+            model.writeToFile(file, fileInput);
+        }
     }
 
     @FXML
     public void loadSingleButtonClicked(ActionEvent actionEvent) {
         // Open up a window asking for the directory of the file where the list was saved
-        // model.loadList("fileName", "");
-        // Create new ObservableList<ToDoList>
-        // Add new element to ObservableList<ToDoList> with components of the file that was read
-        // Clear taskView and toDoListsView
-        // Add ObservableList<ToDoList> to toDoListsView
-        // Add ObservableList<Task> to taskView
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Load List");
+        File file = fileChooser.showOpenDialog(new Stage());
+        if (file != null) {
+            if (toDoList.size() != 0) {
+                toDoList.clear();
+                taskView.getItems().clear();
+            }
+            toDoList = model.loadList(file);
+            // Add ObservableList<Task> to taskView
+            model.changeView(displayMode, toDoList, taskView);
+        }
     }
 
     @FXML

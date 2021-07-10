@@ -1,8 +1,13 @@
 package ucf.assignments;
 
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableView;
+
+import java.io.*;
+import java.nio.file.Paths;
+import java.util.Scanner;
 
 /*
  *  UCF COP3330 Summer 2021 Assignment 4 Solution
@@ -86,24 +91,84 @@ public class ToDoListModel {
         return;
     }
 
-    public void loadList(String fileName, String loadedInput) {
+    public ObservableList loadList(File file) {
         // Read the file given in fileName
-        // Assign the read input to loadedInput
+        try {
+            ObservableList<Task> taskList = FXCollections.observableArrayList();
+            Task loadedTask = new Task(new CheckBox(), "", "");
+            String loadedDesc = "";
+            String loadedDueDate = "";
+            Scanner in = new Scanner(file);
+            while (in.hasNext()) {
+                String tempInput = in.nextLine();
+                // Assign the read input to tempInput
+                if (tempInput.startsWith("Description")) {
+                    tempInput = tempInput.replace("Description: ", "");
+                    loadedDesc = tempInput;
+                }
+                else if (tempInput.startsWith("Due Date")) {
+                    tempInput = tempInput.replace("Due Date: ", "");
+                    loadedDueDate = tempInput;
+                }
+                else if (tempInput.startsWith("Completed")) {
+                    tempInput = tempInput.replace("Completed: ", "");
+                    System.out.println(tempInput);
+                    if (tempInput.equals("Yes")) {
+                        taskList.add(new Task(new CheckBox(), loadedDesc, loadedDueDate));
+                        taskList.get(taskList.size() - 1).getComplete().setSelected(true);
+                    }
+                    else {
+                        taskList.add(new Task(new CheckBox(), loadedDesc, loadedDueDate));
+                        taskList.get(taskList.size() - 1).getComplete().setSelected(false);
+                    }
+                }
+                else if (tempInput.isEmpty() == false) {
+                    loadedDesc += tempInput;
+                    loadedDesc = wrapIfLong(loadedDesc);
+                }
+                else
+                    continue;
+            }
+            return taskList;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    public void saveList(String fileName) {
-        // Save the currently selected list to a local external directory as a .txt file
-        // Create a table using string formatting to organize the components of each list
+    public String generateSaveOutput(ObservableList toDoList) {
+        // Generate input by formatting Task properties
+        String input = "";
+        for (int i = 0; i < toDoList.size(); i++) {
+            Task cur_task = (Task) toDoList.get(i);
+            input += String.format("Description: %s\n", cur_task.getDesc());
+            input += String.format("Due Date: %s\n", cur_task.getDueDate());
+            if (cur_task.getComplete().isSelected())
+                input += "Completed: Yes\n\n";
+            else
+                input += "Completed: No\n\n";
+        }
+        // Return input
+        return input;
+    }
+
+    public void writeToFile(File file, String input) {
+        try {
+            FileWriter myWriter = new FileWriter(file);
+            myWriter.write(input);
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public String wrapIfLong(String description) {
-        if (description.length() >= 135) {
-            if (description.charAt(134) != ' ' || description.charAt(136) == ' ') {
-                String wrappedStr = description.replaceAll(".{135}", "$0\n");
+        if (description.length() >= 155) {
+            if (description.charAt(154) != ' ' || description.charAt(156) == ' ') {
+                String wrappedStr = description.replaceAll(".{155}", "$0\n");
                 return wrappedStr;
             }
-
-            String wrappedStr = description.replaceAll(".{134}", "$0-\n");
+            String wrappedStr = description.replaceAll(".{154}", "$0-\n");
             return wrappedStr;
         }
 

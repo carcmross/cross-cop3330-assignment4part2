@@ -5,9 +5,11 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -165,8 +167,34 @@ public class ToDoListsManagerController implements Initializable {
         return false;
     }
 
+    public boolean tableIsEmpty(TableView taskView) {
+        if (taskView.getItems().size() == 0) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("NO EXISTING TASKS");
+            alert.setContentText("Please make sure there are tasks in the list before you try to remove one.");
+            alert.showAndWait();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean listIsEmpty(ObservableList toDoList) {
+        if (toDoList.size() == 0) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("NO EXISTING TASKS");
+            alert.setContentText("Please make sure there are tasks in the list before you try to clear it.");
+            alert.showAndWait();
+            return true;
+        }
+        return false;
+    }
+
     @FXML
     public void removeTaskButtonClicked(ActionEvent actionEvent) {
+        // Return early if the list has nothing to remove
+        if (tableIsEmpty(taskView))
+            return;
+
         // Get currently selected task with selectionModel
         Task cur_task = taskView.getSelectionModel().getSelectedItem();
 
@@ -260,7 +288,31 @@ public class ToDoListsManagerController implements Initializable {
 
     @FXML
     public void clearButtonClicked(ActionEvent actionEvent) {
+        if (listIsEmpty(toDoList))
+            return;
+
         model.clearList(toDoList);
         taskView.getItems().clear();
+    }
+
+    public void getInstructions(ActionEvent actionEvent) {
+        displayInstructions();
+    }
+
+    public void displayInstructions() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Instructions");
+        alert.setHeaderText("INSTRUCTIONS (DEDICATED TO REY)");
+        alert.setContentText("Creating a task:\n\tTo add a task, type into the description and due date\n\tfields " +
+                                "and then press \"Add Task\".\n\n" + "Editing a task:\n\tTo edit a task, select the " +
+                                "task in the table, click edit \n\ttask, and then enter the new information you'd" +
+                                " like to \n\tassign that task.\n\n" + "Changing view:\n\tTo change the type of " +
+                                "task you'd like to see, choose the\n\tview option from the dropdown menu and click " +
+                                "\"View\".\n\n" + "Removing a task:\n\tTo remove a task, select the task you'd " +
+                                "like to remove,\n\tthen click remove.\n\n" + "Saving a list:\n\tTo save a list, " +
+                                "click the save button, then choose a name\n\tand location for the list to be " +
+                                "stored.\n\n" + "Loading a list:\n\tTo load a list, click the load button, then " +
+                                "navigate to where\n\tthe list file was stored and click \"Open\".");
+        alert.show();
     }
 }

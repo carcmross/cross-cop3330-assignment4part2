@@ -39,5 +39,6 @@
          </font>
       </TextField>
       <Button layoutX="1122.0" layoutY="41.0" mnemonicParsing="false" onAction="#clearButtonClicked" text="Clear List" />
+      <Button layoutX="5.0" layoutY="569.0" mnemonicParsing="false" onAction="#getInstructions" text="Instructions" />
    </children>
 </AnchorPane>

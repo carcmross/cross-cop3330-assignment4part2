@@ -24,6 +24,9 @@ public class ToDoListsManager extends Application {
             primaryStage.setScene(scene);
             primaryStage.setTitle("To-Do List");
             primaryStage.show();
+
+            ToDoListsManagerController controller = new ToDoListsManagerController();
+            controller.displayInstructions();
         } catch (IOException e) {
             e.printStackTrace();
         }

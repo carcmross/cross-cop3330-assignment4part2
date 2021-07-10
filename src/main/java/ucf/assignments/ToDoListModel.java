@@ -1,11 +1,8 @@
 package ucf.assignments;
 
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /*
  *  UCF COP3330 Summer 2021 Assignment 4 Solution
@@ -17,21 +14,62 @@ public class ToDoListModel {
     public void addNewTask(String desc, String due_date, ObservableList toDoList) {
         // Create new task in the currently displayed list
         // Assign the new task the values that were inputted in the text fields
-        toDoList.add(new Task(false, desc, due_date));
+        toDoList.add(new Task(new CheckBox(), desc, due_date));
     }
 
-    public void changeView(String viewOption, ObservableList toDoLists, TableView taskView, int index) {
+    public void changeView(String viewOption, ObservableList toDoList, TableView taskView) {
+        int size = toDoList.size();
+
         // If viewOption == "View All"
-        // - clear taskView and copy every task from the indexed toDoList to taskView
+        if (viewOption.equals("View All")) {
+            // clear taskView and copy every task from the indexed toDoList to taskView
+            if (taskView.getItems().size() != 0)
+                taskView.getItems().clear();
+
+            for (int i = 0; i < size; i++) {
+                Task cur_task = (Task) toDoList.get(i);
+                taskView.getItems().add(cur_task);
+            }
+            return;
+        }
         // If viewOption == "View Completed"
-        // - clear taskView and copy every task with a "true" completed variable from the indexed toDoList to taskView
+        else if (viewOption.equals("View Completed")) {
+            // clear taskView and copy every task with a "true" completed variable from the indexed toDoList to taskView
+            if (taskView.getItems().size() != 0)
+                taskView.getItems().clear();
+
+            for (int i = 0; i < size; i++) {
+                Task cur_task = (Task) toDoList.get(i);
+                if (cur_task.getComplete().isSelected() == true)
+                    taskView.getItems().add(cur_task);
+            }
+            return;
+        }
         // If viewOption == "View Incomplete"
-        // - clear taskView and copy every task with a "false" completed variable from the indexed toDoList to taskView
+        else if (viewOption.equals("View Incomplete")) {
+            // clear taskView and copy every task with a "false" completed variable from the indexed toDoList to taskView
+            if (taskView.getItems().size() != 0)
+                taskView.getItems().clear();
+
+            for (int i = 0; i < size; i++) {
+                Task cur_task = (Task) toDoList.get(i);
+                if (cur_task.getComplete().isSelected() == false)
+                    taskView.getItems().add(cur_task);
+            }
+            return;
+        }
     }
 
-    public void editTask(String newDesc, String newDueDate, ObservableList toDoLists, int index) {
+    public void editTask(String oldDesc, String newDesc, String newDueDate, ObservableList toDoList) {
         // Traverse list at index of toDoLists until oldTitle is found
-        // Change values of task at index of oldTitle to newTitle, newDesc, and newDueDate parameters
+        for (int i = 0; i < toDoList.size(); i++) {
+            Task cur_task = (Task) toDoList.get(i);
+            if (cur_task.getDesc().equals(oldDesc)) {
+                // Change values of task at index of oldTitle to newTitle, newDesc, and newDueDate parameters
+                cur_task.setDesc(newDesc);
+                cur_task.setDueDate(newDueDate);
+            }
+        }
     }
 
     public void deleteTask(String desc, ObservableList toDoList) {

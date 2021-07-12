@@ -5,17 +5,16 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /*
@@ -29,7 +28,9 @@ public class ToDoListsManagerController implements Initializable {
 
     public Task selectedTask;
 
-    public static ObservableList<Task> toDoList = FXCollections.observableArrayList();
+    private ObservableList<Task> toDoList = FXCollections.observableArrayList();
+
+    private ObservableList tempList = FXCollections.observableArrayList();
 
     private String displayMode = "View All";
 
@@ -47,7 +48,7 @@ public class ToDoListsManagerController implements Initializable {
     private TableView<Task> taskView;
 
     @FXML
-    private TableColumn<Task, String> taskColumn1;
+    private TableColumn<Task, Boolean> taskColumn1;
 
     @FXML
     private TableColumn<Task, String> taskColumn2;
@@ -58,10 +59,6 @@ public class ToDoListsManagerController implements Initializable {
     @FXML
     private ChoiceBox<String> viewOptions;
 
-    @FXML
-    private DatePicker newTaskDatePicker;
-
-
     public Task getSelectedTask() {
         return selectedTask;
     }
@@ -70,39 +67,7 @@ public class ToDoListsManagerController implements Initializable {
         this.selectedTask = selectedTask;
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        viewOptions.setValue("View All");
-        viewOptions.getItems().addAll("View All", "View Completed", "View Incomplete");
-        displayMode = "View All";
-
-        taskColumn1.setCellValueFactory(new PropertyValueFactory<Task, String>("Complete"));
-        taskColumn2.setCellValueFactory(new PropertyValueFactory<Task, String>("Desc"));
-        taskColumn3.setCellValueFactory(new PropertyValueFactory<Task, String>("DueDate"));
-        taskView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-    }
-
-    @FXML
-    public void addTaskButtonClicked(ActionEvent actionEvent) {
-        // Get value of newTaskDesc, and newDueDate text fields
-        String descInput = newTaskDesc.getText();
-        String dueDateInput = newDueDate.getText();
-        descInput = model.wrapIfLong(descInput);
-
-        if (generateErrors(descInput, dueDateInput))
-            return;
-
-        model.addNewTask(descInput, dueDateInput, toDoList);
-
-        // Add task to taskView
-        model.changeView(displayMode, toDoList, taskView);
-
-        // Clear newTaskDesc, and newDueDate text fields
-        newTaskDesc.clear();
-        newDueDate.clear();
-    }
-
-    private boolean generateErrors(String descInput, String dueDateInput) {
+    public boolean generateErrors(String descInput, String dueDateInput) {
         // - If newTaskDesc exceeds 256, generate pop-up warning
         if (descTooLong(descInput))
             return true;
@@ -114,14 +79,18 @@ public class ToDoListsManagerController implements Initializable {
         if (dateFormatWrong(dueDateInput))
             return true;
 
-        if (taskAlreadyExists(descInput))
+        if (notGregorian(dueDateInput))
+            return true;
+
+        if (taskAlreadyExists(descInput, toDoList))
             return true;
         return false;
     }
 
-    public boolean taskAlreadyExists(String descInput) {
-        for (int i = 0; i < toDoList.size(); i++) {
-            if (descInput.equals(toDoList.get(i).getDesc())) {
+    public boolean taskAlreadyExists(String descInput, ObservableList taskList) {
+        for (int i = 0; i < taskList.size(); i++) {
+            Task cur_task = (Task) taskList.get(i);
+            if (descInput.equals(cur_task.getDesc())) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setHeaderText("DUPLICATE TASK");
                 alert.setContentText("Task already exists in list.");
@@ -189,6 +158,126 @@ public class ToDoListsManagerController implements Initializable {
         return false;
     }
 
+    public boolean notGregorian(String dueDate) {
+        int month = Integer.parseInt(dueDate.substring(5, 7));
+        int day = Integer.parseInt(dueDate.substring(8, 10));
+        int year = Integer.parseInt(dueDate.substring(0,4));
+        List<Integer> thirtyDays = Arrays.asList(4, 6, 9, 11);
+        List<Integer> thirtyOneDays = Arrays.asList(1, 3, 5, 7, 8, 10, 12);
+
+        // If month is greater than 12 or less than/equal to 0, generate warning
+        if (month > 12 || month <= 0) {
+            gregorianWarning();
+            return true;
+        }
+
+        // If month is a month with 31 days, make sure the day input isn't greater than 30 or less than/equal to 0
+        for (int i = 0; i < thirtyDays.size(); i++) {
+            if (month == thirtyDays.get(i)) {
+                if (day > 30 || day <= 0) {
+                    gregorianWarning();
+                    return true;
+                }
+            }
+        }
+
+        // If month is a month with 31 days, make sure the day input isn't greater than 31 or less than/equal to 0
+        for (int i = 0; i < thirtyOneDays.size(); i++) {
+            if (month == thirtyOneDays.get(i)) {
+                if (day > 31 || day <= 0) {
+                    gregorianWarning();
+                    return true;
+                }
+            }
+        }
+
+        // If February and not a leap year, make sure day isn't greater than 28
+        if (month == 2 && year % 4 != 0) {
+            if (day > 28 || day <= 0) {
+                gregorianWarning();
+                return true;
+            }
+        }
+        else if (month == 2 && year % 4 == 0){
+            // if year isn't evenly divisible by both 100 and 400, it isn't a leap year
+            if (year % 100 == 0 && year % 400 != 0) {
+                if (day > 28 || day <= 0) {
+                    gregorianWarning();
+                    return true;
+                }
+            }
+            // If any other year divisible by 4, its a leap year
+            if (day > 29 || day <= 0) {
+                gregorianWarning();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void gregorianWarning() {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setHeaderText("DUE DATE OUT OF BOUNDS");
+        alert.setContentText("Make sure your date is a valid date on the Gregorian Calendar.");
+        alert.showAndWait();
+    }
+
+    public void displayInstructions() {
+        // Generate pop-up window telling user instructions
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Instructions");
+        alert.setHeaderText("INSTRUCTIONS (DEDICATED TO REY)");
+        alert.setContentText("Creating a task:\n\tTo add a task, type into the description and due date\n\tfields " +
+                "and then press \"Add Task\".\n\n" + "Editing a task:\n\tTo edit a task, select the " +
+                "task in the table, click edit \n\ttask, and then enter the new information you'd" +
+                " like to \n\tassign that task.\n\n" + "Changing view:\n\tTo change the type of " +
+                "task you'd like to see, choose the\n\tview option from the dropdown menu and click " +
+                "\"View\".\n\n" + "Removing a task:\n\tTo remove a task, select the task you'd " +
+                "like to remove,\n\tthen click remove.\n\n" + "Saving a list:\n\tTo save a list, " +
+                "click the save button, then choose a name\n\tand location for the list to be " +
+                "stored.\n\n" + "Loading a list:\n\tTo load a list, click the load button, then " +
+                "navigate to where\n\tthe list file was stored and click \"Open\".\n\n" + "Marking " +
+                "complete/Incomplete:\n\tTo mark a task as complete, select a task and press \n\tthe \"Mark " +
+                "Complete/Incomplete\" button.");
+        alert.show();
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        viewOptions.setValue("View All");
+        viewOptions.getItems().addAll("View All", "View Completed", "View Incomplete");
+        displayMode = "View All";
+
+        taskColumn1.setCellValueFactory(new PropertyValueFactory<Task, Boolean>("Complete"));
+        taskColumn2.setCellValueFactory(new PropertyValueFactory<Task, String>("Desc"));
+        taskColumn3.setCellValueFactory(new PropertyValueFactory<Task, String>("DueDate"));
+        taskView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+    }
+
+    @FXML
+    public void addTaskButtonClicked(ActionEvent actionEvent) {
+        // Get value of newTaskDesc, and newDueDate text fields
+        String descInput = newTaskDesc.getText();
+        String dueDateInput = newDueDate.getText();
+        descInput = model.wrapIfLong(descInput);
+
+        if (generateErrors(descInput, dueDateInput))
+            return;
+
+        model.addNewTask(descInput, dueDateInput, toDoList);
+
+        // Add task to taskView
+        if (taskView.getItems().size() == 0)
+            taskView.getItems().clear();
+        tempList = model.changeView(displayMode, toDoList);
+        taskView.getItems().addAll(tempList);
+
+        // Clear newTaskDesc, and newDueDate text fields
+        newTaskDesc.clear();
+        newDueDate.clear();
+    }
+
     @FXML
     public void removeTaskButtonClicked(ActionEvent actionEvent) {
         // Return early if the list has nothing to remove
@@ -202,7 +291,7 @@ public class ToDoListsManagerController implements Initializable {
         String tempDesc = cur_task.getDesc();
 
         // Remove task from taskView
-        taskView.getItems().removeAll(cur_task);
+        taskView.getItems().remove(cur_task);
 
         System.out.println(toDoList.size());
 
@@ -212,6 +301,7 @@ public class ToDoListsManagerController implements Initializable {
 
     @FXML
     public void editTaskButtonClicked(ActionEvent actionEvent) throws IOException {
+        // Return from function early if there is no task selected to edit
         if (taskView.getSelectionModel().isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setHeaderText("NO TASK SELECTED");
@@ -220,13 +310,17 @@ public class ToDoListsManagerController implements Initializable {
             return;
         }
 
+        // Get selected task and set curDesc and curDueDate to the task's current property values
         selectedTask = taskView.getSelectionModel().getSelectedItem();
         curDesc = selectedTask.getDesc();
         curDesc = model.wrapIfLong(curDesc);
         curDueDate = selectedTask.getDueDate();
+
+        // Open window to get new values from user for the selected task
         EditTaskManagerController editor = new EditTaskManagerController();
         editor.openEditWindow(selectedTask.getDesc(), selectedTask.getDueDate());
 
+        // Generate error messages if any of the new values are invalid
         if (generateErrors(EditTaskManagerController.tempDesc, EditTaskManagerController.tempDueDate))
             return;
 
@@ -234,7 +328,11 @@ public class ToDoListsManagerController implements Initializable {
                             EditTaskManagerController.tempDueDate, toDoList);
         EditTaskManagerController.tempDesc = "";
         EditTaskManagerController.tempDueDate = "";
-        model.changeView(displayMode, toDoList, taskView);
+        // Call changeView to ensure that TableView displays according to the current displayMode
+        if (taskView.getItems().size() == 0)
+            taskView.getItems().clear();
+        tempList = model.changeView(displayMode, toDoList);
+        taskView.getItems().addAll(tempList);
     }
 
     @FXML
@@ -248,11 +346,14 @@ public class ToDoListsManagerController implements Initializable {
             return;
         }
 
-        // Traverse the toDoList array until last element, storing each element in a string as you go
         // Generate pop-up window asking what the name of the .txt file should be
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save List");
+        FileChooser.ExtensionFilter extFil = new FileChooser.ExtensionFilter("Text File (*.txt)",
+                                                                    "*.txt");
+        fileChooser.getExtensionFilters().add(extFil);
         File file = fileChooser.showSaveDialog(new Stage());
+
         String fileInput = model.generateSaveOutput(toDoList);
         if (file != null) {
             // Write to file
@@ -266,6 +367,7 @@ public class ToDoListsManagerController implements Initializable {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Load List");
         File file = fileChooser.showOpenDialog(new Stage());
+        // If a file was chosen, clear the TableView and ObservableList and add the inputted lists to them
         if (file != null) {
             if (toDoList.size() != 0) {
                 toDoList.clear();
@@ -273,7 +375,10 @@ public class ToDoListsManagerController implements Initializable {
             }
             toDoList = model.loadList(file);
             // Add ObservableList<Task> to taskView
-            model.changeView(displayMode, toDoList, taskView);
+            if (taskView.getItems().size() == 0)
+                taskView.getItems().clear();
+            tempList = model.changeView(displayMode, toDoList);
+            taskView.getItems().addAll(tempList);
         }
     }
 
@@ -282,8 +387,12 @@ public class ToDoListsManagerController implements Initializable {
         // Change the value of displayMode to the value of the viewOptions choicebox
         displayMode = viewOptions.getValue();
 
-        // Pass the index of the matching list onto the changeView function
-        model.changeView(displayMode, toDoList, taskView);
+        // Pass the toDoList into the changeView function
+        ObservableList tempList = FXCollections.observableArrayList();
+        if (taskView.getItems().size() == 0)
+            taskView.getItems().clear();
+        tempList = model.changeView(displayMode, toDoList);
+        taskView.getItems().addAll(tempList);
     }
 
     @FXML
@@ -291,28 +400,34 @@ public class ToDoListsManagerController implements Initializable {
         if (listIsEmpty(toDoList))
             return;
 
+        // Clear ObservableList and TableView
         model.clearList(toDoList);
         taskView.getItems().clear();
     }
 
+    @FXML
     public void getInstructions(ActionEvent actionEvent) {
         displayInstructions();
     }
 
-    public void displayInstructions() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Instructions");
-        alert.setHeaderText("INSTRUCTIONS (DEDICATED TO REY)");
-        alert.setContentText("Creating a task:\n\tTo add a task, type into the description and due date\n\tfields " +
-                                "and then press \"Add Task\".\n\n" + "Editing a task:\n\tTo edit a task, select the " +
-                                "task in the table, click edit \n\ttask, and then enter the new information you'd" +
-                                " like to \n\tassign that task.\n\n" + "Changing view:\n\tTo change the type of " +
-                                "task you'd like to see, choose the\n\tview option from the dropdown menu and click " +
-                                "\"View\".\n\n" + "Removing a task:\n\tTo remove a task, select the task you'd " +
-                                "like to remove,\n\tthen click remove.\n\n" + "Saving a list:\n\tTo save a list, " +
-                                "click the save button, then choose a name\n\tand location for the list to be " +
-                                "stored.\n\n" + "Loading a list:\n\tTo load a list, click the load button, then " +
-                                "navigate to where\n\tthe list file was stored and click \"Open\".");
-        alert.show();
+    @FXML
+    public void markButtonClicked(ActionEvent actionEvent) {
+        selectedTask = taskView.getSelectionModel().getSelectedItem();
+        System.out.println(selectedTask.getComplete());
+
+        for (int i = 0; i < toDoList.size(); i++) {
+            Task cur_task = toDoList.get(i);
+            if (cur_task.getDesc().equals(selectedTask.getDesc())) {
+                if (cur_task.getComplete().equals("Yes"))
+                    toDoList.get(i).setComplete("No");
+                else
+                    toDoList.get(i).setComplete("Yes");
+            }
+        }
+
+        if (taskView.getItems().size() == 0)
+            taskView.getItems().clear();
+        tempList = model.changeView(displayMode, toDoList);
+        taskView.getItems().addAll(tempList);
     }
 }

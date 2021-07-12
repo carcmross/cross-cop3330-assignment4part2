@@ -8,6 +8,8 @@ class ToDoListsManager {
 
 class ToDoListsManagerController {
     - model: TaskListModel
+    - selectedTask: Task
+    - toDoList: ObservableList
     - displayMode: String
     - newTaskTitle: TextField
     - newTaskDesc: TextField
@@ -15,43 +17,70 @@ class ToDoListsManagerController {
     - taskView: TableView
     - viewOptions: ChoiceBox<String>
     - selectedList: ChoiceBox<String>
-
-    initialize()
-    removeTaskButtonClicked()
-    editTaskButtonClicked()
-    saveSingleButtonClicked()
-    loadSingleButtonClicked()
-    addTaskButtonClicked()
-    viewButtonClicked()
+    - displayMode: String
+    - newTaskDesc: TextField
+    - newDueDate: TextField
+    - taskView: TableView
+    - taskColumn1: TableColumn
+    - taskColumn2: TableColumn
+    - taskColumn3: TableColumn
+    - viewOptions: ChoiceBox<String>
+    + curDesc: String
+    + curDueDate: String
+    + getSelectedTask(): Task
+    + setSelectedTask(Task)
+    + generateErrors(String, String): boolean
+    + taskAlreadyExists(String, ObservableList): boolean
+    + dateFormatWrong(String): boolean
+    + inputIsBlank(String, String): boolean
+    + descTooLong(String): boolean
+    + tableIsEmpty(TableView): boolean
+    + listIsEmpty(ObservableList): boolean
+    + notGregorian(String): boolean
+    + gregorianWarning()
+    + displayInstructions()
+    + initialize()
+    + removeTaskButtonClicked()
+    + editTaskButtonClicked()
+    + saveSingleButtonClicked()
+    + loadSingleButtonClicked()
+    + addTaskButtonClicked()
+    + viewButtonClicked()
 }
 
 class ToDoListsModel {
-    - toDoLists: ArrayList<ToDoList>
-
-    + addNewTask(String, String, String, ObservableList, int)
-    + changeView(String, ObservableList, TableView, int)
-    + editTask(String, String, String, String, ObservableList, int)
-    + deleteTask(String, ObservableList, int)
-    + loadList(ToDoList, ObservableList)
+    + addNewTask(String, String, ObservableList)
+    + changeView(String, ObservableList, TableView)
+    + editTask(String, String, String, ObservableList)
+    + deleteTask(String, ObservableList)
+    + loadList(File)
     + saveList(String)
-}
-
-class ToDoList {
-    - title: String
-    - tasks: ArrayList<Task>
+    + generateSaveOutput(ObservableList)
+    + writeToFile(File, String)
+    + wrapIfLong(String)
+    + clearList(ObservableList)
 }
 
 class Task {
-    - title: String
     - description: String
     - due_date: String
-    - completed: Boolean
+    - completed: String
 }
 
+class EditTaskManagerController {
+    + tempDesc: String
+    + tempDueDate: String
+    - submitButton: Button
+    - editedDesc: TextField
+    - editedDueDate: TextField
+
+    + openEditWindow(String, String)
+    + submitChangesButtonClicked(ActionEvent)
+    + initialize(URL, ResourceBundle)
+}
 
 ToDoListsManager -- ToDoListsManagerController
 ToDoListsManagerController *--> ToDoListsModel
-ToDoListsModel *-> ToDoList
-ToDoList *--> Task
+ToDoListsModel *--> Task
 
 @enduml

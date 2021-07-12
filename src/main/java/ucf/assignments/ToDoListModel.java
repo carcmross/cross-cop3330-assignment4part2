@@ -2,11 +2,8 @@ package ucf.assignments;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableView;
-
 import java.io.*;
-import java.nio.file.Paths;
 import java.util.Scanner;
 
 /*
@@ -19,50 +16,43 @@ public class ToDoListModel {
     public void addNewTask(String desc, String due_date, ObservableList toDoList) {
         // Create new task in the currently displayed list
         // Assign the new task the values that were inputted in the text fields
-        toDoList.add(new Task(new CheckBox(), desc, due_date));
+        toDoList.add(new Task("No", desc, due_date));
     }
 
-    public void changeView(String viewOption, ObservableList toDoList, TableView taskView) {
+    public ObservableList changeView(String viewOption, ObservableList toDoList) {
         int size = toDoList.size();
+        ObservableList<Task> tempList = FXCollections.observableArrayList();
 
         // If viewOption == "View All"
         if (viewOption.equals("View All")) {
-            // clear taskView and copy every task from the indexed toDoList to taskView
-            if (taskView.getItems().size() != 0)
-                taskView.getItems().clear();
-
+            // Add every value to tempList
             for (int i = 0; i < size; i++) {
                 Task cur_task = (Task) toDoList.get(i);
-                taskView.getItems().add(cur_task);
+                tempList.add(cur_task);
             }
-            return;
+            return tempList;
         }
         // If viewOption == "View Completed"
         else if (viewOption.equals("View Completed")) {
-            // clear taskView and copy every task with a "true" completed variable from the indexed toDoList to taskView
-            if (taskView.getItems().size() != 0)
-                taskView.getItems().clear();
-
+            // Add every task with a "true" completed variable from the indexed toDoList to tempList
             for (int i = 0; i < size; i++) {
                 Task cur_task = (Task) toDoList.get(i);
-                if (cur_task.getComplete().isSelected() == true)
-                    taskView.getItems().add(cur_task);
+                if (cur_task.getComplete().equals("Yes"))
+                    tempList.add(cur_task);
             }
-            return;
+            return tempList;
         }
         // If viewOption == "View Incomplete"
         else if (viewOption.equals("View Incomplete")) {
-            // clear taskView and copy every task with a "false" completed variable from the indexed toDoList to taskView
-            if (taskView.getItems().size() != 0)
-                taskView.getItems().clear();
-
+            // Add every task with a "false" completed variable from the indexed toDoList to tempList
             for (int i = 0; i < size; i++) {
                 Task cur_task = (Task) toDoList.get(i);
-                if (cur_task.getComplete().isSelected() == false)
-                    taskView.getItems().add(cur_task);
+                if (cur_task.getComplete().equals("No"))
+                    tempList.add(cur_task);
             }
-            return;
+            return tempList;
         }
+        return null;
     }
 
     public void editTask(String oldDesc, String newDesc, String newDueDate, ObservableList toDoList) {
@@ -95,7 +85,7 @@ public class ToDoListModel {
         // Read the file given in fileName
         try {
             ObservableList<Task> taskList = FXCollections.observableArrayList();
-            Task loadedTask = new Task(new CheckBox(), "", "");
+            Task loadedTask = new Task("No", "", "");
             String loadedDesc = "";
             String loadedDueDate = "";
             Scanner in = new Scanner(file);
@@ -112,14 +102,11 @@ public class ToDoListModel {
                 }
                 else if (tempInput.startsWith("Completed")) {
                     tempInput = tempInput.replace("Completed: ", "");
-                    System.out.println(tempInput);
                     if (tempInput.equals("Yes")) {
-                        taskList.add(new Task(new CheckBox(), loadedDesc, loadedDueDate));
-                        taskList.get(taskList.size() - 1).getComplete().setSelected(true);
+                        taskList.add(new Task("Yes", loadedDesc, loadedDueDate));
                     }
                     else {
-                        taskList.add(new Task(new CheckBox(), loadedDesc, loadedDueDate));
-                        taskList.get(taskList.size() - 1).getComplete().setSelected(false);
+                        taskList.add(new Task("No", loadedDesc, loadedDueDate));
                     }
                 }
                 else if (tempInput.isEmpty() == false) {
@@ -143,7 +130,7 @@ public class ToDoListModel {
             Task cur_task = (Task) toDoList.get(i);
             input += String.format("Description: %s\n", cur_task.getDesc());
             input += String.format("Due Date: %s\n", cur_task.getDueDate());
-            if (cur_task.getComplete().isSelected())
+            if (cur_task.getComplete().equals("Yes"))
                 input += "Completed: Yes\n\n";
             else
                 input += "Completed: No\n\n";
@@ -163,12 +150,17 @@ public class ToDoListModel {
     }
 
     public String wrapIfLong(String description) {
+        // If description length is greater than 155 characters, wrap string to fit description column
         if (description.length() >= 155) {
-            if (description.charAt(154) != ' ' || description.charAt(156) == ' ') {
+            if (description.charAt(154) == ' ') {
+                String wrappedStr = description.replaceAll(".{154}", "$0\n");
+                return wrappedStr;
+            }
+            else if (description.charAt(156) == ' ') {
                 String wrappedStr = description.replaceAll(".{155}", "$0\n");
                 return wrappedStr;
             }
-            String wrappedStr = description.replaceAll(".{154}", "$0-\n");
+            String wrappedStr = description.replaceAll(".{155}", "$0-\n");
             return wrappedStr;
         }
 

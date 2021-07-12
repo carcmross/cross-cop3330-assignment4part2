@@ -40,5 +40,6 @@
       </TextField>
       <Button layoutX="1122.0" layoutY="41.0" mnemonicParsing="false" onAction="#clearButtonClicked" text="Clear List" />
       <Button layoutX="5.0" layoutY="569.0" mnemonicParsing="false" onAction="#getInstructions" text="Instructions" />
+      <Button layoutX="781.0" layoutY="41.0" mnemonicParsing="false" onAction="#markButtonClicked" text="Mark Complete/Incomplete" />
    </children>
 </AnchorPane>

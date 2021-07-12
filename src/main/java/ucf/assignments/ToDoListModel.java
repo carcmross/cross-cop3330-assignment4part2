@@ -2,7 +2,6 @@ package ucf.assignments;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.TableView;
 import java.io.*;
 import java.util.Scanner;
 
@@ -139,28 +138,27 @@ public class ToDoListModel {
         return input;
     }
 
-    public void writeToFile(File file, String input) {
+    public boolean writeToFile(File file, String input) {
         try {
             FileWriter myWriter = new FileWriter(file);
             myWriter.write(input);
             myWriter.close();
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
     public String wrapIfLong(String description) {
         // If description length is greater than 155 characters, wrap string to fit description column
-        if (description.length() >= 155) {
-            if (description.charAt(154) == ' ') {
-                String wrappedStr = description.replaceAll(".{154}", "$0\n");
+        if (description.length() >= 149) {
+            if (description.charAt(148) == ' ' || description.charAt(150) == ' ') {
+                String wrappedStr = description.replaceAll(".{149}", "$0\n");
                 return wrappedStr;
             }
-            else if (description.charAt(156) == ' ') {
-                String wrappedStr = description.replaceAll(".{155}", "$0\n");
-                return wrappedStr;
-            }
-            String wrappedStr = description.replaceAll(".{155}", "$0-\n");
+
+            String wrappedStr = description.replaceAll(".{148}", "$0-\n");
             return wrappedStr;
         }
 

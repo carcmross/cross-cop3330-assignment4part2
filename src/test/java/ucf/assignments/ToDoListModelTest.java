@@ -2,8 +2,11 @@ package ucf.assignments;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.TableView;
 import org.junit.jupiter.api.Test;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Scanner;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /*
@@ -143,19 +146,42 @@ class ToDoListModelTest {
 
     @Test
     void loadList_loads_single_list_into_taskViewer() {
-        // Set string named actual to loadList("LoadSingleTest.txt", "")
+        ToDoListModel model = new ToDoListModel();
+        // Set ObservableList named actual to loadList("LoadSingleTest.txt")
+        ObservableList<Task> actual = FXCollections.observableArrayList();
+        actual = model.loadList(new File("src/test/resources/loadListTestInput.txt"));
         // Set expected to a string of the text as written in LoadSingleTest.txt
+        ObservableList<Task> expected = FXCollections.observableArrayList();
+        expected.add(new Task("Yes", "Assignment 4 Part 2", "2021-07-12"));
         // AssertEquals(expected, actual)
+        assertEquals(actual.toString(), expected.toString());
     }
 
     @Test
-    void saveList_saves_single_list_to_txt_file() {
-        // Create a list called "tempList" with one element in it named "listOne"
-        // Add three tasks with initialized strings to listOne
-        // Call saveList("SaveTestSingle.txt");
+    void writeToFile_saves_single_list_to_txt_file() {
+        ToDoListModel model = new ToDoListModel();
+        String input = "Description: Task 1\nDue Date: 2021-07-08\nCompleted: No\n\nDescription: Task 2\n" +
+                "Due Date: 2021-07-09\nCompleted: Yes\n\nDescription: Task 3\nDue Date: 2021-07-10\n" +
+                "Completed: No\n\n";
+        // Call saveList("SaveListTest.txt", input);
+        model.writeToFile(new File("src/test/resources/SaveListTest.txt"), input);
         // Read the SaveTestSingle.txt file and assign the string to actual
+        String actual = "";
+        try {
+            Scanner in = new Scanner(Paths.get("src/test/resources/SaveListTest.txt"));
+            while (in.hasNext()) {
+                actual += in.nextLine();
+                actual += "\n";
+            }
+            actual += "\n";
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // Set expected to the expected string using String.format and tabs
-        // assertEquals(expected, actual)
+        String expected = "Description: Task 1\nDue Date: 2021-07-08\nCompleted: No\n\nDescription: Task 2\n" +
+                "Due Date: 2021-07-09\nCompleted: Yes\n\nDescription: Task 3\nDue Date: 2021-07-10\n" +
+                "Completed: No\n\n";
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -181,13 +207,15 @@ class ToDoListModelTest {
     void wrapIfLong_wraps_string_to_next_line_if_longer_than_155_characters() {
         ToDoListModel model = new ToDoListModel();
 
-        // Create a string longer than 155 characters
+        // Create a string longer than 150 characters
         String longString = "CyRqVYYnLD tRNADhjtFH zKqzPJiNUe mMzvadtTZG THdgxwtxjQ lFZdBISqcb RRGxNsWVBP gWzGCK" +
                 "SCJW FwdrfSSyHH luwysMaORt HAWaKjdaVE qdgXuLUjme ZaxQvwjWaE HeJVltWufL AmfaEDXWFh hwvQtLTGFn";
 
+
         String actual = model.wrapIfLong(longString);
+        System.out.println(actual);
         String expected = "CyRqVYYnLD tRNADhjtFH zKqzPJiNUe mMzvadtTZG THdgxwtxjQ lFZdBISqcb RRGxNsWVBP gWzGCK" +
-                "SCJW FwdrfSSyHH luwysMaORt HAWaKjdaVE qdgXuLUjme ZaxQvwjWaE HeJVltWufL A-\nmfaEDXWFh hwvQtLTGFn";
+                "SCJW FwdrfSSyHH luwysMaORt HAWaKjdaVE qdgXuLUjme ZaxQvwjWaE HeJVl-\ntWufL AmfaEDXWFh hwvQtLTGFn";
         assertEquals(expected, actual);
     }
 }

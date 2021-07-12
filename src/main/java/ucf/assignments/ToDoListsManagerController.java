@@ -268,7 +268,7 @@ public class ToDoListsManagerController implements Initializable {
         model.addNewTask(descInput, dueDateInput, toDoList);
 
         // Add task to taskView
-        if (taskView.getItems().size() == 0)
+        if (taskView.getItems().size() != 0)
             taskView.getItems().clear();
         tempList = model.changeView(displayMode, toDoList);
         taskView.getItems().addAll(tempList);
@@ -329,7 +329,7 @@ public class ToDoListsManagerController implements Initializable {
         EditTaskManagerController.tempDesc = "";
         EditTaskManagerController.tempDueDate = "";
         // Call changeView to ensure that TableView displays according to the current displayMode
-        if (taskView.getItems().size() == 0)
+        if (taskView.getItems().size() != 0)
             taskView.getItems().clear();
         tempList = model.changeView(displayMode, toDoList);
         taskView.getItems().addAll(tempList);
@@ -375,7 +375,7 @@ public class ToDoListsManagerController implements Initializable {
             }
             toDoList = model.loadList(file);
             // Add ObservableList<Task> to taskView
-            if (taskView.getItems().size() == 0)
+            if (taskView.getItems().size() != 0)
                 taskView.getItems().clear();
             tempList = model.changeView(displayMode, toDoList);
             taskView.getItems().addAll(tempList);
@@ -389,7 +389,7 @@ public class ToDoListsManagerController implements Initializable {
 
         // Pass the toDoList into the changeView function
         ObservableList tempList = FXCollections.observableArrayList();
-        if (taskView.getItems().size() == 0)
+        if (taskView.getItems().size() != 0)
             taskView.getItems().clear();
         tempList = model.changeView(displayMode, toDoList);
         taskView.getItems().addAll(tempList);
@@ -425,7 +425,7 @@ public class ToDoListsManagerController implements Initializable {
             }
         }
 
-        if (taskView.getItems().size() == 0)
+        if (taskView.getItems().size() != 0)
             taskView.getItems().clear();
         tempList = model.changeView(displayMode, toDoList);
         taskView.getItems().addAll(tempList);

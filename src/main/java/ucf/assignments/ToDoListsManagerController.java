@@ -395,8 +395,8 @@ public class ToDoListsManagerController implements Initializable {
             // Add ObservableList<Task> to taskView
             if (taskView.getItems().size() != 0)
                 taskView.getItems().clear();
-            tempList = model.sortList(tempList, sortMode);
             tempList = model.changeView(displayMode, toDoList);
+            tempList = model.sortList(tempList, sortMode);
             taskView.getItems().addAll(tempList);
         }
     }

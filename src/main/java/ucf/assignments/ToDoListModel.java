@@ -141,15 +141,15 @@ public class ToDoListModel {
         return input;
     }
 
-    public boolean writeToFile(File file, String input) {
+    public void writeToFile(File file, String input) {
         try {
             FileWriter myWriter = new FileWriter(file);
             myWriter.write(input);
             myWriter.close();
-            return true;
+            return;
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            return;
         }
     }
 

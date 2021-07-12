@@ -9,6 +9,7 @@ class ToDoListsManager {
 class ToDoListsManagerController {
     - model: TaskListModel
     - selectedTask: Task
+    - sortMode: boolean
     - toDoList: ObservableList
     - displayMode: String
     - newTaskTitle: TextField
@@ -25,12 +26,14 @@ class ToDoListsManagerController {
     - taskColumn2: TableColumn
     - taskColumn3: TableColumn
     - viewOptions: ChoiceBox<String>
+    - sortByDateCheckBox: CheckBox
     + curDesc: String
     + curDueDate: String
     + getSelectedTask(): Task
     + setSelectedTask(Task)
     + generateErrors(String, String): boolean
     + taskAlreadyExists(String, ObservableList): boolean
+    + taskMatchesOther(String, String, ObservableList): boolean
     + dateFormatWrong(String): boolean
     + inputIsBlank(String, String): boolean
     + descTooLong(String): boolean
@@ -46,19 +49,24 @@ class ToDoListsManagerController {
     + loadSingleButtonClicked()
     + addTaskButtonClicked()
     + viewButtonClicked()
+    + clearButtonClicked()
+    + getInstructions()
+    + markButtonClicked()
+    + sortBoxClicked()
 }
 
 class ToDoListsModel {
     + addNewTask(String, String, ObservableList)
-    + changeView(String, ObservableList, TableView)
+    + changeView(String, ObservableList, TableView): ObservableList
     + editTask(String, String, String, ObservableList)
     + deleteTask(String, ObservableList)
     + loadList(File)
     + saveList(String)
-    + generateSaveOutput(ObservableList)
+    + generateSaveOutput(ObservableList): String
     + writeToFile(File, String)
-    + wrapIfLong(String)
+    + wrapIfLong(String): String
     + clearList(ObservableList)
+    + sortList(ObservableList, boolean): ObservableList
 }
 
 class Task {
@@ -80,6 +88,7 @@ class EditTaskManagerController {
 }
 
 ToDoListsManager -- ToDoListsManagerController
+EditTaskManagerController - ToDoListsManagerController
 ToDoListsManagerController *--> ToDoListsModel
 ToDoListsModel *--> Task
 

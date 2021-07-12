@@ -34,7 +34,7 @@ public class ToDoListsManagerController implements Initializable {
 
     private String displayMode = "View All";
 
-    public boolean sortMode = false;
+    private boolean sortMode = false;
 
     public static String curDesc;
 

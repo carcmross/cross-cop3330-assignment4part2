@@ -3,6 +3,9 @@ package ucf.assignments;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 
 /*
@@ -167,5 +170,32 @@ public class ToDoListModel {
 
     public void clearList(ObservableList toDoList) {
         toDoList.clear();
+    }
+
+    public ObservableList sortList(ObservableList toDoList, boolean sortMode) {
+        if (sortMode == false)
+            return toDoList;
+
+        List<String> dates = new ArrayList<>();
+        for (int i = 0; i < toDoList.size(); i++) {
+            Task cur_task = (Task) toDoList.get(i);
+            dates.add(cur_task.getDueDate());
+        }
+
+        Collections.sort(dates);
+        ObservableList<Task> sortedTasks = FXCollections.observableArrayList();
+        List<Integer> indexStored = new ArrayList<>();
+
+        for (int i = 0; i < dates.size(); i++) {
+            for (int j = 0; j < toDoList.size(); j++) {
+                Task cur_task = (Task) toDoList.get(j);
+                if (cur_task.getDueDate().equals(dates.get(i)) && indexStored.contains(j) != true) {
+                    sortedTasks.add(cur_task);
+                    indexStored.add(j);
+                }
+            }
+        }
+
+        return sortedTasks;
     }
 }

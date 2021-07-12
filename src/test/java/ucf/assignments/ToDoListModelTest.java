@@ -98,11 +98,6 @@ class ToDoListModelTest {
 
     @Test
     void editTask_edits_the_contents_of_a_task() {
-        // Create a list called "tempList" with one element in it named "listOne"
-        // Add three tasks with initialized strings to listOne
-        // actual = editTask("taskTwoOldName", "taskTwoNewName", "taskTwoNewDesc", "taskTwoNewDueDate", tempList, 0)
-        // Set expected to a list with the same values of tempList, including the now changed task two values
-        // assertEquals(expected, actual)
         ToDoListModel model = new ToDoListModel();
         // Create a list named "actual" composed of three tasks with initialized strings
         // Set the completed variable in tasks two to false, and true for the others
@@ -217,5 +212,25 @@ class ToDoListModelTest {
         String expected = "CyRqVYYnLD tRNADhjtFH zKqzPJiNUe mMzvadtTZG THdgxwtxjQ lFZdBISqcb RRGxNsWVBP gWzGCK" +
                 "SCJW FwdrfSSyHH luwysMaORt HAWaKjdaVE qdgXuLUjme ZaxQvwjWaE HeJVl-\ntWufL AmfaEDXWFh hwvQtLTGFn";
         assertEquals(expected, actual);
+    }
+
+    @Test
+    void sortList_returns_sorted_list() {
+        ToDoListModel model = new ToDoListModel();
+        // Create a list named "actual" composed of three tasks with initialized strings
+        // Set the completed variable in tasks two to false, and true for the others
+        ObservableList<Task> actual = FXCollections.observableArrayList();
+        Task task1 = new Task("No", "Task 1", "2021-07-08");
+        Task task2 = new Task("No", "Task 3", "2021-07-10");
+        Task task3 = new Task("Yes", "Task 2", "2021-07-09");
+        actual.addAll(task1, task2, task3);
+
+        // Sort actual if sortMode is set to true
+        actual = model.sortList(actual, true);
+
+        // Set expected to a ObservableList composed of every task from actual in a sorted fashion
+        ObservableList expected = FXCollections.observableArrayList();
+        expected.addAll(task1, task3, task2);
+        assertEquals(expected.toString(), actual.toString());
     }
 }

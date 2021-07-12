@@ -34,6 +34,8 @@ public class ToDoListsManagerController implements Initializable {
 
     private String displayMode = "View All";
 
+    public boolean sortMode = false;
+
     public static String curDesc;
 
     public static String curDueDate;
@@ -59,6 +61,9 @@ public class ToDoListsManagerController implements Initializable {
     @FXML
     private ChoiceBox<String> viewOptions;
 
+    @FXML
+    private CheckBox sortByDateCheckBox;
+
     public Task getSelectedTask() {
         return selectedTask;
     }
@@ -81,9 +86,6 @@ public class ToDoListsManagerController implements Initializable {
 
         if (notGregorian(dueDateInput))
             return true;
-
-        if (taskAlreadyExists(descInput, toDoList))
-            return true;
         return false;
     }
 
@@ -91,6 +93,20 @@ public class ToDoListsManagerController implements Initializable {
         for (int i = 0; i < taskList.size(); i++) {
             Task cur_task = (Task) taskList.get(i);
             if (descInput.equals(cur_task.getDesc())) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setHeaderText("DUPLICATE TASK");
+                alert.setContentText("Task already exists in list.");
+                alert.showAndWait();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean taskMatchesOther(String oldInput, String descInput, ObservableList taskList) {
+        for (int i = 0; i < taskList.size(); i++) {
+            Task cur_task = (Task) taskList.get(i);
+            if (descInput.equals(cur_task.getDesc()) && !descInput.equals(oldInput)) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setHeaderText("DUPLICATE TASK");
                 alert.setContentText("Task already exists in list.");
@@ -262,7 +278,7 @@ public class ToDoListsManagerController implements Initializable {
         String dueDateInput = newDueDate.getText();
         descInput = model.wrapIfLong(descInput);
 
-        if (generateErrors(descInput, dueDateInput))
+        if (generateErrors(descInput, dueDateInput) || taskAlreadyExists(descInput, toDoList))
             return;
 
         model.addNewTask(descInput, dueDateInput, toDoList);
@@ -315,13 +331,15 @@ public class ToDoListsManagerController implements Initializable {
         curDesc = selectedTask.getDesc();
         curDesc = model.wrapIfLong(curDesc);
         curDueDate = selectedTask.getDueDate();
+        String temp = curDesc;
 
         // Open window to get new values from user for the selected task
         EditTaskManagerController editor = new EditTaskManagerController();
         editor.openEditWindow(selectedTask.getDesc(), selectedTask.getDueDate());
 
         // Generate error messages if any of the new values are invalid
-        if (generateErrors(EditTaskManagerController.tempDesc, EditTaskManagerController.tempDueDate))
+        if (generateErrors(EditTaskManagerController.tempDesc, EditTaskManagerController.tempDueDate) ||
+                                taskMatchesOther(temp, EditTaskManagerController.tempDesc, toDoList))
             return;
 
         model.editTask(selectedTask.getDesc(), EditTaskManagerController.tempDesc,
@@ -377,6 +395,7 @@ public class ToDoListsManagerController implements Initializable {
             // Add ObservableList<Task> to taskView
             if (taskView.getItems().size() != 0)
                 taskView.getItems().clear();
+            tempList = model.sortList(tempList, sortMode);
             tempList = model.changeView(displayMode, toDoList);
             taskView.getItems().addAll(tempList);
         }
@@ -428,6 +447,23 @@ public class ToDoListsManagerController implements Initializable {
         if (taskView.getItems().size() != 0)
             taskView.getItems().clear();
         tempList = model.changeView(displayMode, toDoList);
+        taskView.getItems().addAll(tempList);
+    }
+
+    @FXML
+    public void sortBoxClicked(ActionEvent actionEvent) {
+        ObservableList<Task> tempList = FXCollections.observableArrayList();
+        if (sortByDateCheckBox.isSelected()) {
+            sortMode = true;
+            tempList = model.sortList(toDoList, sortMode);
+            tempList = model.changeView(displayMode, tempList);
+        }
+        else {
+            sortMode = false;
+            tempList = model.changeView(displayMode, toDoList);
+        }
+        if (taskView.getItems().size() != 0)
+            taskView.getItems().clear();
         taskView.getItems().addAll(tempList);
     }
 }
